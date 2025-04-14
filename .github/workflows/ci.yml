@@ -22,17 +22,13 @@ jobs:
       run: npm install
 
     - name: Install Protoc
-      run: |
-        PROTOC_ZIP=protoc-3.14.0-linux-x86_64.zip
-        curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.14.0/$PROTOC_ZIP
-        sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
-        sudo unzip -o $PROTOC_ZIP -d /usr/local 'include/*'
-        rm -f $PROTOC_ZIP
+      uses: arduino/setup-protoc@v3
 
     - name: Generate TypeScript from Proto
       run: |
         protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto \
                --ts_proto_out=. \
+               --ts_proto_opt=onlyTypes=true \
                --ts_proto_opt=comments=true \
                ./simple.proto
 
