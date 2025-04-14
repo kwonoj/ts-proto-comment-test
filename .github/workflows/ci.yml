@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Install Protoc
+      run: |
+        PROTOC_ZIP=protoc-3.14.0-linux-x86_64.zip
+        curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.14.0/$PROTOC_ZIP
+        sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
+        sudo unzip -o $PROTOC_ZIP -d /usr/local 'include/*'
+        rm -f $PROTOC_ZIP
+
+    - name: Generate TypeScript from Proto
+      run: |
+        protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto \
+               --ts_proto_out=. \
+               --ts_proto_opt=comments=true \
+               ./simple.proto
+
+    - name: Display generated TypeScript file
+      run: cat simple.ts
